@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  mlflow:
+    build: ./mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow/mlruns:/mlflow/mlruns
+
+  prefect:
+    build:
+      context: ./prefect
+      args:
+        API_KEY: pnu_42Hv56FdfkAcquozdSjoAdbtohJLvl1KUmqR
+    ports:
+      - "4200:4200"
+
+  train:
+    build: ./train
+    volumes:
+      - data:/app/data
+      - ./mlflow/mlruns:/mlflow/mlruns
+    depends_on:
+      - mlflow
+      - prefect
+
+volumes:
+  data:
+  mlruns:
