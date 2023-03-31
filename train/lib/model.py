@@ -40,47 +40,6 @@ from app_config import (
 from lib.utils import load_csv, save_model
 
 
-def get_benchmark(
-    data: Dataset, 
-    lOO: bool = False
-) -> pd.DataFrame:
-    """
-    Generates a benchmark DataFrame for a set of Surprise recommendation algorithms.
-
-    Args:
-    - data: A Surprise Dataset object containing the ratings data to use for training and testing.
-    - lOO (bool): A boolean to configure the used of LeaveOneOut.
-
-    Returns:
-    - A pandas DataFrame containing the RMSE scores for each algorithm, along with their names.
-    """
-    
-    experiment_full_name = f"{EXPERIMENT}_benchmark_loo.csv" if lOO else f"{EXPERIMENT}_benchmark.csv"
-    cv = LeaveOneOut() if lOO else 5
-    
-    if os.path.exists(os.path.join(DATA_DIR, experiment_full_name)):
-        # Load pre-existing benchmark DataFrame from CSV file
-        with open(f"{EXPERIMENT}_benchmark.csv", "rb") as f:
-            benchmark_df = load_csv(os.path.join(DATA_DIR, experiment_full_name))
-            return benchmark_df
-    else:
-        benchmark = []
-        # Iterate over all algorithms
-        for algorithm in [NormalPredictor(), BaselineOnly(), KNNBasic(), KNNWithMeans(), KNNWithZScore(), KNNBaseline(), SVD(), SVDpp(), SlopeOne(), CoClustering()]: 
-            # Perform cross validation
-            results = cross_validate(algorithm, data, measures=['RMSE'], cv=cv, verbose=False)
-
-            # Get results & append algorithm name
-            tmp = pd.DataFrame.from_dict(results).mean(axis=0)
-            tmp = tmp.append(pd.Series([str(algorithm).split(' ')[0].split('.')[-1]], index=['Algorithm']))
-            benchmark.append(tmp)
-        benchmark_df = pd.DataFrame(benchmark).set_index('Algorithm').sort_values('test_rmse')    
-        
-        # Save benchmark DataFrame to CSV file
-        benchmark_df.to_csv(os.path.join(DATA_DIR, experiment_full_name), index = True)
-        return benchmark_df
-
-
 def calculate_metrics(
     predictions: list[tuple[int, int, float, float, any]],
     data: list[tuple[int, int, float]],

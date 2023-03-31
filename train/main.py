@@ -32,22 +32,27 @@ def complete_ml():
         
     data, train_data, test_data = prepare_data(rating_data)
 
-    fit_model(data, 'NormalPredictor', NormalPredictor)
+    best_NormalPredictor = fit_model(data, 'NormalPredictor', NormalPredictor)
+    evaluate_model('NormalPredictor', best_NormalPredictor['model'], train_data, test_data, threshold=0)
 
     hyper_BaselineOnly = {
         "bsl_options": 0
     }
-    fit_model(data, 'BaselineOnly', BaselineOnly, hyper_BaselineOnly, bsl_options=True)
+    best_BaselineOnly = fit_model(data, 'BaselineOnly', BaselineOnly, hyper_BaselineOnly, bsl_options=True)
+    evaluate_model('BaselineOnly', best_BaselineOnly['model'], train_data, test_data)
 
     hyper_SVD = {
         "n_factors": ["int", 50, 200],
         "n_epochs": ["int", 10, 50],
         "lr_all": ["loguniform", 1e-4, 1e-1],
         "reg_all": ["loguniform", 1e-4, 1e-1],
-    }
-    fit_model(data, 'SVD', SVD, hyper_SVD)
+    }   
+    best_SVD = fit_model(data, 'SVD', SVD, hyper_SVD)
+    evaluate_model('SVD', best_SVD['model'], train_data, test_data)
 
-    fit_model(data, 'SlopeOne', SlopeOne)
+    
+    best_SlopeOne = fit_model(data, 'SlopeOne', SlopeOne)
+    evaluate_model('SlopeOne', best_SlopeOne['model'], train_data, test_data)
 
     hyper_CoClustering = {
         "n_cltr_u": ["int", 3, 20],
@@ -55,7 +60,8 @@ def complete_ml():
         "n_epochs": ["int", 10, 50],
         "random_state": ["int", 0, 100],
     }
-    fit_model(data, 'CoClustering', CoClustering, hyper_CoClustering)
+    best_CoClustering = fit_model(data, 'CoClustering', CoClustering, hyper_CoClustering)
+    evaluate_model('CoClustering', best_CoClustering['model'], train_data, test_data)
 
 
 @flow(name="Batch inference", retries=1, retry_delay_seconds=30)
@@ -89,7 +95,7 @@ inference_deployment_every_minute = Deployment.build_from_flow(
 )
 
 if __name__ == "__main__":
-    # complete_ml()
+    complete_ml()
     # inference = batch_inference()
     inference_deployment_every_minute.apply()
     flow.register(project_name="anime")

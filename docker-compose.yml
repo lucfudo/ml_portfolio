@@ -16,6 +16,13 @@ services:
     ports:
       - "4200:4200"
 
+  ml_pipeline:
+    build: ./ml_pipeline
+    ports:
+      - "8889:8888"
+    volumes:
+      - ./data:/app/data
+
   train:
     build: ./train
     volumes:

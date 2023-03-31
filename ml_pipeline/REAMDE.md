@@ -1,0 +1,2 @@
+# ML Pipeline
+This folder contains all the code and data related to the machine learning pipeline used for our project. The pipeline consists of several stages, including data preprocessing, exploratory data analysis, feature engineering, model training, and model evaluation.
