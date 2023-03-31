@@ -1,6 +1,7 @@
 # MACHINE LEARNING PROJECT - Anime Recommender System
 This is a project that provides anime recommendations based on a user's watching history. It consists of several services:
 
+- ml_pipeline: A service for dig into datasets and make assuptions.
 - mlflow: A service for managing machine learning experiments and tracking model performance.
 - prefect: A workflow management system for automating and scheduling data processing and training.
 - train: A service for training the recommendation model using collaborative filtering.
@@ -35,12 +36,17 @@ docker run -p 80:80 docker/getting-started
 Clone this repository to your local machine.
 In the root directory of the project, run :
 ```
+docker-compose build
 docker-compose up
 ```
 
 Once all services are up and running, navigate to http://localhost:3000 in your browser to access the anime application.
 
 ## Services
+### **ml_pipeline**
+This is where we create the first notebook to get information about the data and make assumptions to choose the best model with the best hyperparameters to build the most effective machine learning algorithm to recommend anime.
+Password for jupyter is **pipeline**.
+
 ### **mlflow**
 MLflow is an open source platform for managing machine learning lifecycle, including experiment tracking, reproducible runs, and model sharing.
 
@@ -62,6 +68,7 @@ The anime_application service in this project is a React web application that al
 
 ### **quality_checks**
 The quality_checks service in this project is responsible for performing data quality checks. It uses the data volume to access the necessary data files and logs the results to the mlflow service.
+Password for jupyter is **quality**.
 
 ## Conclusion
 That's it! In this project, we train a recommendation model and serve it through a FastAPI service. We use a React web application to allow users to input their user ID and view anime recommendations.
