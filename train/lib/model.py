@@ -39,7 +39,7 @@ from app_config import (
 )
 from lib.utils import load_csv, save_model
 
-@task(name="Get benchmark", tags=['Data'])
+
 def get_benchmark(
     data: Dataset, 
     lOO: bool = False
@@ -81,7 +81,6 @@ def get_benchmark(
         return benchmark_df
 
 
-@task(name="Calculate metrics", tags=['Model'])
 def calculate_metrics(
     predictions: list[tuple[int, int, float, float, any]],
     data: list[tuple[int, int, float]],
@@ -120,7 +119,6 @@ def calculate_metrics(
     return metrics
 
 
-@task(name="Get hyperparameters", tags=['Model'])
 def get_hyperparams(
     trial: optuna.Trial,
     hyperparams_dict: object
@@ -170,7 +168,6 @@ def get_hyperparams(
     return hyperparams
 
 
-@task(name="Objective", tags=['Model'])
 def objective(
     trial: any, 
     data: Dataset, 

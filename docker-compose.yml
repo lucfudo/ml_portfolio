@@ -19,11 +19,35 @@ services:
   train:
     build: ./train
     volumes:
-      - data:/app/data
+      - ./data:/app/data
       - ./mlflow/mlruns:/mlflow/mlruns
     depends_on:
       - mlflow
       - prefect
+      
+  api:
+    build: ./api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data
+      - ./mlflow/mlruns:/mlflow/mlruns
+    depends_on:
+      - mlflow
+
+  anime_application:
+    build: ./anime_application
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  quality_checks:
+    build: ./quality_checks
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/app/data
 
 volumes:
   data:

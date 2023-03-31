@@ -1,27 +1,18 @@
-# Data analysis
+from typing import Any
+
 import pandas as pd
 import numpy as np
 
-
-# Sklearn algorithms
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import KMeans
 
-
-# Surprise algorithms
 from surprise import Dataset, Reader
 
-
-# Config
-from app_config import (USE_MINIMUM, MAX_USER_RATING, MAX_RATINGS_PER_ANIME, MIN_RATING)
-import random
-
-from prefect import task
+from app_config import *
 
 
-@task(name="Prepare anime", tags=['Preprocessing'])
-def prepare_anime(df: pd.DataFrame) -> pd.DataFrame:
+def _prepare_anime(df: pd.DataFrame) -> pd.DataFrame:
     """
     Prepare the anime dataset for modeling.
     
@@ -32,6 +23,8 @@ def prepare_anime(df: pd.DataFrame) -> pd.DataFrame:
     - pd.DataFrame: the cleaned and processed anime dataset
     """
     if isinstance(df, pd.DataFrame):
+        logger.info("Pre-processing anime data...")
+
         # Remove anime without rating
         df['rating'] = df['rating'].replace(-1, np.nan)
         # Remove rows with null values
@@ -65,8 +58,7 @@ def prepare_anime(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-@task(name="Prepare rating", tags=['Preprocessing'])
-def prepare_rating(
+def _prepare_rating(
     df_a: pd.DataFrame,
     df_r: pd.DataFrame,
     max_user_ratings: int=MAX_USER_RATING,
@@ -87,6 +79,8 @@ def prepare_rating(
     - pd.DataFrame: The prepared ratings dataframe.
     """
     if isinstance(df_a, pd.DataFrame) and isinstance(df_r, pd.DataFrame):
+        logger.info("Pre-processing rating data...")
+
         # Remove non rating
         df_r['rating'] = df_r['rating'].replace(-1, np.nan)
         df_r = df_r.dropna()
@@ -110,11 +104,10 @@ def prepare_rating(
     return df_r
 
 
-@task(name="Prepare data", tags=['Preprocessing'])
-def prepare_data(
+def _get_rating_data(
     df: pd.DataFrame,
-    use_minimum: bool=USE_MINIMUM
-) -> tuple:
+    min_rating: int = MIN_RATING
+) -> Any:
     """
     This function prepares the rating dataset for use in the Surprise library 
     by modifying the columns names, filtering users and items with a minimum number 
@@ -123,41 +116,53 @@ def prepare_data(
 
     Args:
     - df (pd.DataFrame): The original ratings dataframe.
-    - use_minimum (bool): Whether to filter users and items with a minimum number 
-        of ratings. Default is False.
-
-    Returns:
-    - tuple: A tuple containing the prepared dataset, the training data, and 
-        the validation data.
+    - min_rating (int): Filter users and items with a minimum number of ratings.
 
     """
     # Modify columns name
     df = df.rename(columns={"user_id": "user", "anime_id": "item"})
     
-    if use_minimum:
-        # Filter the ratings data frame to limit to users who rated a minimum number of products
-        user_counts = df["user"].value_counts()
-        user_counts = user_counts[user_counts >= MIN_RATING]
-        df = df[df["user"].isin(user_counts.index)]
-        
-        # Filter the ratings data frame to limit to products that received a minimum number of ratings
-        item_counts = df["item"].value_counts()
-        item_counts = item_counts[item_counts >= MIN_RATING]
-        df = df[df["item"].isin(item_counts.index)]
+    # Filter the ratings data frame to limit to users who rated a minimum number of products
+    user_counts = df["user"].value_counts()
+    user_counts = user_counts[user_counts >= min_rating]
+    df = df[df["user"].isin(user_counts.index)]
+    
+    # Filter the ratings data frame to limit to products that received a minimum number of ratings
+    item_counts = df["item"].value_counts()
+    item_counts = item_counts[item_counts >= min_rating]
+    df = df[df["item"].isin(item_counts.index)]
     
     # Create Reader and load data
     reader = Reader(line_format="user item rating", sep=";", skip_lines=1)
     data = Dataset.load_from_df(df, reader)
+
+    return data
+
+
+def prepare_data(anime_df: pd.DataFrame, rating_df: pd.DataFrame, max_user_ratings: int = MAX_USER_RATING, 
+                 max_ratings_per_anime: int = MAX_RATINGS_PER_ANIME, min_rating: int = MIN_RATING) -> Any:
+    """
+    Pre-processes and filters the input data to prepare it for model training or inference.
+
+    Args:
+    - anime_df (pd.DataFrame): The dataframe containing information about the anime.
+    - rating_df (pd.DataFrame): The dataframe containing user ratings for the anime.
+    - max_user_ratings (int): The maximum number of ratings per user to consider.
+    - max_ratings_per_anime (int): The maximum number of ratings per anime to consider.
+    - min_rating (int): The minimum rating to consider.
+
+    Raises:
+    - ValueError: If the input data is not in the expected format.
+
+    """
+    logger.info("Pre-processing data...")
+    if not isinstance(anime_df, pd.DataFrame) or not isinstance(rating_df, pd.DataFrame):
+        raise ValueError("Input data must be dataframes")
     
-    # Split the raw ratings into training and validation sets
-    raw_ratings = data.raw_ratings
-    random.shuffle(raw_ratings)
-    threshold = int(0.8 * len(raw_ratings))
-    train_raw_ratings = raw_ratings[:threshold]
-    test_raw_ratings = raw_ratings[threshold:]
+    anime_data = _prepare_anime(anime_df)
+    rating_data = _prepare_rating(anime_data, rating_df, max_user_ratings=max_user_ratings, 
+                                  max_ratings_per_anime=max_ratings_per_anime)
+    data = _get_rating_data(rating_data, min_rating=min_rating)
+    
+    return data
 
-    data.raw_ratings = train_raw_ratings # data is now training set
-
-    train_data = data.build_full_trainset().build_testset() # trainset: biased set
-    test_data = data.construct_testset(test_raw_ratings) # testset: unbiased set
-    return data, train_data, test_data

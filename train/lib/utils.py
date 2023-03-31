@@ -5,7 +5,6 @@ from prefect import task
 from app_config import ANIME_DATA, RATING_DATA, PKL_MODEL_DIR
 
 
-@task(name="Load csv", tags=['Serialize'])
 def load_csv(path: str) -> pd.DataFrame:
     """
     Load a CSV file as a pandas DataFrame.
@@ -25,15 +24,31 @@ def load_csv(path: str) -> pd.DataFrame:
     except FileNotFoundError:
         print("File not found")
     
-       
+
 @task(name="Load data", tags=['Serialize'])
-def load_data():
-    anime_df = load_csv(ANIME_DATA)
-    rating_df = load_csv(RATING_DATA)
-    return anime_df, rating_df
+def load_data(anime_path: str=ANIME_DATA, rating_path: str=RATING_DATA) -> tuple:
+    """
+    Load anime and rating data CSV files as pandas DataFrames.
+
+    Args:
+    - anime_path (str): The path to the anime data CSV file.
+    - rating_path (str): The path to the rating data CSV file.
+
+    Returns:
+    - tuple: A tuple containing the anime data and rating data as pandas DataFrames.
+
+    Raises:
+    - FileNotFoundError: If either of the files are not found at the specified paths.
+
+    """
+    try:
+        anime_df = pd.read_csv(anime_path)
+        rating_df = pd.read_csv(rating_path)
+        return anime_df, rating_df
+    except FileNotFoundError:
+        print("File not found")
 
 
-@task(name="Save model", tags=['Serialize'])
 def save_model(model: object, name: str) -> None:
     """Saves a trained model to a file using pickle.
 
@@ -52,7 +67,7 @@ def save_model(model: object, name: str) -> None:
         pickle.dump(model, f)
 
 
-@task(name="Load model", tags=['Serialize'])
+
 def load_model(name: str) -> object:
     """Loads a trained model from a file using pickle.
 

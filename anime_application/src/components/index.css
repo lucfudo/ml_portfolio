@@ -1,0 +1,137 @@
+.container {
+    background-image: url('../logo.svg');
+    background-position: top left;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+h1 {
+    font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "MS Mincho", serif;
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    line-height: 1.2;
+    margin: 0;
+    padding: 20px 0;
+    border-bottom: 2px solid #333;
+  }
+
+form{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+input[type=number] {
+    margin-top: 20px;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin-bottom: 20px;
+}
+
+input[type=number]::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+button[type=submit] {
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #ccc;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+  }
+  
+button[type=submit]:hover {
+    background-color: #999;
+}
+
+button[type=submit]:active {
+    background-color: #ccc;
+    box-shadow: none;
+}
+  
+ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    list-style: none;
+}
+  
+li {
+    width: 300px;
+}
+  
+.anime-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    height: 450px;
+    padding-bottom: 16px;
+}
+  
+.anime-card img {
+    width: 100%;
+    height: 350;
+    object-fit: cover;
+    object-position: center;
+}
+
+.anime-card .anime-details {
+    padding: 16px;
+    text-align: center;
+}
+
+.anime-card b {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 8px;
+}
+
+.anime-card p {
+    font-size: 16px;
+    margin: 8px;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+  }
+  
+  .loading .spinner {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 5px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #ccc;
+    animation: spin 1s infinite linear;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }

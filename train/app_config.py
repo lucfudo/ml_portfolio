@@ -20,6 +20,10 @@ PKL_MODEL_DIR = os.path.join(DATA_DIR, "pkl_model")
 # MLflow
 MLFLOW_TRACKING_URI = "http://mlflow:5000"
 EXPERIMENT = "test_w_min_rating"
+NAME = "NormalPredictor"
+REGISTERED_MODEL_NAME = f"{EXPERIMENT}-{NAME}"
+STAGE = "production"
+REGISTERED_MODEL_URI = f"models://mlflow/{REGISTERED_MODEL_NAME}/{STAGE}"
 
 
 # Optuna
